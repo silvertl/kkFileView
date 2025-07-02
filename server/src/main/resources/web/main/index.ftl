@@ -15,6 +15,7 @@
     <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="bootstrap-table/bootstrap-table.min.js"></script>
     <script type="text/javascript" src="js/base64.min.js"></script>
+    <script type="text/javascript" src="js/global.js"></script>
     <style>
         <#-- 删除文件密码弹窗居中 -->
         .alert {
@@ -294,6 +295,27 @@
             }
 
             var b64Encoded = Base64.encode(_url);
+
+        // 在每次请求时读取认证信息
+        fetch('${baseUrl}onlinePreview?url=' + encodeURIComponent(b64Encoded), {
+            headers: {
+                't_id': localStorage.getItem('t_id') // 从 localStorage 中读取
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            var newWindow = window.open(); // 打开新窗口
+            if (!newWindow) {
+                console.error('Failed to open new window. It might be blocked by the browser.');
+                return;
+            }
+            newWindow.document.write(data); // 写入内容
+            newWindow.document.close(); // 结束写入
+            newWindow.location.replace('${baseUrl}onlinePreview?url=' + encodeURIComponent(b64Encoded)); // 强制更新 URL
+        })
+        .catch(error => {
+            console.error('Fetch error:', error); // 打印错误信息
+        });
 
             window.open('${baseUrl}onlinePreview?url=' + encodeURIComponent(b64Encoded));
         });
